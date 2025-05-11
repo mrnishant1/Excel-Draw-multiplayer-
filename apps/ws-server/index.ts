@@ -13,8 +13,18 @@ wss.on("connection", function connection(ws) {
   Users.push({ ws });
   ws.on("message", (data) => {
     const stringData = data.toString();
-    Users.forEach((user) => {
-      user.ws.send(stringData);
+
+    Users = Users.filter((user) => {
+      // Remove if socket is closed
+      if (user.ws.readyState !== WebSocket.OPEN) return false;
+
+      // Don't send back to sender
+      if (user.ws !== ws) {
+        user.ws.send(stringData);
+      }
+
+      return true; // Keep the user
     });
   });
-});
+}
+);
