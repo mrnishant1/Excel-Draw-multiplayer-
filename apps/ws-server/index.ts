@@ -1,30 +1,29 @@
 import { WebSocket, WebSocketServer } from "ws";
 
-interface Users {
-  ws: WebSocket;
-}
-
-let Users: Users[] = [];
+const rooms: { [roomId: string]: WebSocket[] } = {};
 
 const wss = new WebSocketServer({ port: 8080 });
 //for now anyone can join server
-wss.on("connection", function connection(ws) {
+wss.on("connection", (ws, requset) => {
+  const url = requset.url;
+  const roomId = url?.split('/')[1]?.trim();
+
+  console.log(url);
   //store every user that comes
-  Users.push({ ws });
+  if(!roomId) return;
+  if (!rooms[roomId]) {
+    rooms[roomId] = []; // create new room array
+  }
+  rooms[roomId].push(ws); // push
+
+  console.log(rooms);
   ws.on("message", (data) => {
     const stringData = data.toString();
-
-    Users = Users.filter((user) => {
-      // Remove if socket is closed
-      if (user.ws.readyState !== WebSocket.OPEN) return false;
-
-      // Don't send back to sender
-      if (user.ws !== ws) {
-        user.ws.send(stringData);
+    // Don't send back to sender
+    rooms[roomId]?.forEach((user) => {
+      if (user !== ws) {
+        user.send(stringData);
       }
-
-      return true; // Keep the user
     });
   });
-}
-);
+});

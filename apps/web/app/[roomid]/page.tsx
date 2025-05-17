@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Draw from "../components/draw";
-import { useSocket } from "../hooks/useSocket";
-import Toolbar from "../components/toolBar";
-import { useShape } from "../contextAPI/shapeContext";
-import { ExistingShape } from "./types/tooltype";
-import rough from 'roughjs';
-
+import Draw from "../../components/draw";
+import { useSocket } from "../../hooks/useSocket";
+import Toolbar from "../../components/toolBar";
+import { useShape } from "../../contextAPI/shapeContext";
+import { ExistingShape } from "../types/tooltype";
+import { useParams } from "next/navigation";
 
 export default function CanvasAPI() {
+  const params = useParams()
+  const roomid = params.roomid?.toString();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { socket } = useSocket();
+  const { socket } = useSocket(roomid||"");
   const { shape } = useShape();
   const existingShapesRef = useRef<ExistingShape[]>([]);
   const pencilArray = useRef<{ x: number; y: number }[]>([]);
